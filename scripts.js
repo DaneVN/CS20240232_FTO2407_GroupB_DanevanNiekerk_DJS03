@@ -5,8 +5,11 @@ import {
   renderDropdownOptions,
   applyTheme,
 } from "./module/helper.js";
+/** ========== Global Variables ========== */
 let page = 1;
 let matches = books;
+
+/** ========== Initialization ========== */
 
 // Render initial set of books
 renderBooks(matches.slice(0, BOOKS_PER_PAGE));
@@ -23,6 +26,7 @@ renderDropdownOptions(
   "All Authors"
 );
 
+// Set the theme based on user preferences
 const prefersDark =
   window.matchMedia &&
   window.matchMedia("(prefers-color-scheme: dark)").matches;
