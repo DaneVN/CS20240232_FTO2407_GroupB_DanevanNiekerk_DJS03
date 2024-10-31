@@ -1,4 +1,3 @@
-import { books, authors, genres, BOOKS_PER_PAGE } from "../data.js";
 /**
  * Creates and returns an option element.
  * @param {string} value - The option value.
@@ -18,17 +17,17 @@ export const createOption = (value, text) => {
  */
 export const renderBooks = (bookList) => {
   const fragment = document.createDocumentFragment();
-  for (const { author, id, image, title } of bookList) {
+  for (const book of bookList) {
     const element = document.createElement("button");
     element.classList = "preview";
-    element.setAttribute("data-preview", id);
+    element.setAttribute("data-preview", book.id);
 
     element.innerHTML = `
-              <img class="preview__image" src="${image}" />
-              <div class="preview__info">
-                  <h3 class="preview__title">${title}</h3>
-                  <div class="preview__author">${authors[author]}</div>
-              </div>`;
+          <img class="preview__image" src="${book.image}" />
+          <div class="preview__info">
+              <h3 class="preview__title">${book.title}</h3>
+              <div class="preview__author">${book.getAuthorName()}</div>
+          </div>`;
 
     fragment.appendChild(element);
   }

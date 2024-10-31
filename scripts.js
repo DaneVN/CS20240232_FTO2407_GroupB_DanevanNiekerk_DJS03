@@ -1,13 +1,60 @@
-import { books, authors, genres, BOOKS_PER_PAGE } from "./data.js";
+import {
+  books as bookData,
+  authors as authorData,
+  genres as genreData,
+  BOOKS_PER_PAGE,
+} from "./data.js";
 import {
   createOption,
   renderBooks,
   renderDropdownOptions,
   applyTheme,
 } from "./module/helper.js";
+
+/** ========== Object Classes ========== */
+
+/** Represents a book with properties and methods. */
+class Book {
+  constructor({ id, author, image, title, genres, published, description }) {
+    this.id = id;
+    this.author = author;
+    this.image = image;
+    this.title = title;
+    this.genres = genres;
+    this.published = published;
+    this.description = description;
+  }
+
+  getAuthorName() {
+    return Author.all[this.author];
+  }
+
+  getPublicationYear() {
+    return new Date(this.published).getFullYear();
+  }
+}
+
+/** Represents an author. */
+class Author {
+  static all = authorData;
+
+  static getAuthorName(id) {
+    return this.all[id];
+  }
+}
+
+/** Represents a genre. */
+class Genre {
+  static all = genreData;
+
+  static getGenreName(id) {
+    return this.all[id];
+  }
+}
+
 /** ========== Global Variables ========== */
 let page = 1;
-let matches = books;
+let matches = bookData.map((book) => new Book(book));
 
 /** ========== Initialization ========== */
 
@@ -16,12 +63,12 @@ renderBooks(matches.slice(0, BOOKS_PER_PAGE));
 
 // Populate genres and authors dropdowns
 renderDropdownOptions(
-  genres,
+  Genre.all,
   document.querySelector("[data-search-genres]"),
   "All Genres"
 );
 renderDropdownOptions(
-  authors,
+  Author.all,
   document.querySelector("[data-search-authors]"),
   "All Authors"
 );
@@ -36,8 +83,8 @@ applyTheme(prefersDark ? "night" : "day");
 const updateShowMoreButton = () => {
   const remaining = Math.max(matches.length - page * BOOKS_PER_PAGE, 0);
   document.querySelector("[data-list-button]").innerHTML = `
-        <span>Show more</span>
-        <span class="list__remaining">(${remaining})</span>`;
+      <span>Show more</span>
+      <span class="list__remaining">(${remaining})</span>`;
   document.querySelector("[data-list-button]").disabled = remaining <= 0;
 };
 updateShowMoreButton();
@@ -89,16 +136,18 @@ document
     const formData = new FormData(event.target);
     const filters = Object.fromEntries(formData);
 
-    matches = books.filter((book) => {
-      const genreMatch =
-        filters.genre === "any" || book.genres.includes(filters.genre);
-      const titleMatch =
-        filters.title.trim() === "" ||
-        book.title.toLowerCase().includes(filters.title.toLowerCase());
-      const authorMatch =
-        filters.author === "any" || book.author === filters.author;
-      return genreMatch && titleMatch && authorMatch;
-    });
+    matches = bookData
+      .map((book) => new Book(book))
+      .filter((book) => {
+        const genreMatch =
+          filters.genre === "any" || book.genres.includes(filters.genre);
+        const titleMatch =
+          filters.title.trim() === "" ||
+          book.title.toLowerCase().includes(filters.title.toLowerCase());
+        const authorMatch =
+          filters.author === "any" || book.author === filters.author;
+        return genreMatch && titleMatch && authorMatch;
+      });
 
     page = 1;
     document.querySelector("[data-list-items]").innerHTML = "";
@@ -123,7 +172,7 @@ document
     const previewElement = pathArray.find((node) => node?.dataset?.preview);
 
     if (previewElement) {
-      const activeBook = books.find(
+      const activeBook = matches.find(
         (book) => book.id === previewElement.dataset.preview
       );
       if (activeBook) {
@@ -132,9 +181,9 @@ document
         document.querySelector("[data-list-image]").src = activeBook.image;
         document.querySelector("[data-list-title]").innerText =
           activeBook.title;
-        document.querySelector("[data-list-subtitle]").innerText = `${
-          authors[activeBook.author]
-        } (${new Date(activeBook.published).getFullYear()})`;
+        document.querySelector(
+          "[data-list-subtitle]"
+        ).innerText = `${activeBook.getAuthorName()} (${activeBook.getPublicationYear()})`;
         document.querySelector("[data-list-description]").innerText =
           activeBook.description;
       }
